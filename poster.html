@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Poster Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      padding: 10px;
+      font-family: sans-serif;
+      background: linear-gradient(to bottom right, #f7f7f7, #e0eaff);
+      text-align: center;
+      animation: fadeIn 1s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    #posterWrapper {
+      max-width: 100%;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      max-width: 540px;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      animation: floatUp 1s ease-in-out;
+    }
+
+    @keyframes floatUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    input, button {
+      margin: 8px 0;
+      padding: 10px;
+      width: 90%;
+      max-width: 300px;
+      font-size: 16px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    input[type="range"] {
+      width: 90%;
+      max-width: 300px;
+    }
+
+    label {
+      font-size: 14px;
+      margin-top: 10px;
+      display: block;
+    }
+
+    button {
+      background-color: #ffcc00;
+      color: #000;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #ff9900;
+    }
+
+    #downloadLink {
+      display: none;
+      margin-top: 10px;
+      font-size: 18px;
+      color: #fff;
+      background-color: #28a745;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .credits {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .credits a {
+      text-decoration: none;
+      font-weight: bold;
+      color: #0077cc;
+    }
+
+    .credits a:hover {
+      text-decoration: underline;
+      color: #005599;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Generate Your Poster</h2>
+  <input type="file" id="imageUpload" accept="image/*">
+  <input type="text" id="nameInput" placeholder="Enter your name">
+
+ 
+
+  <button onclick="generatePoster()">Save Poster</button>
+
+  <a id="downloadLink" href="#" download="poster.png">Click here to download your poster</a>
+
+  <div id="posterWrapper">
+    <canvas id="posterCanvas" width="1080" height="1350"></canvas>
+  </div>
+
+  <footer>
+    <div class="credits">
+      <div>🖌️ Designed by <a href="https://wa.me/qr/46PPTQH7J4PHL1" target="_blank">Rahul Mehta</a></div>
+      <div>💻 Developed by <a href="https://wa.me/qr/3K25IZW4M6EPH1" target="_blank">Aditya Neel</a></div>
+    </div>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById("posterCanvas");
+    const ctx = canvas.getContext("2d");
+    const background = new Image();
+    background.src = "poster2.jpg";
+
+    const userImageX = 36;
+    const userImageY = 550;
+    const userImageWidth = 410;
+    const userImageHeight = 475;
+
+    background.onload = () => {
+      ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    };
+
+    function generatePoster() {
+      const file = document.getElementById("imageUpload").files[0];
+      const name = document.getElementById("nameInput").value;
+     
+      const downloadLink = document.getElementById("downloadLink");
+
+      if (!file || !name) {
+        alert("Please upload an image and enter a name.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const userImage = new Image();
+        userImage.onload = function() {
+          // Redraw background first
+          ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+
+          // Draw user image
+          ctx.drawImage(userImage, userImageX, userImageY, userImageWidth, userImageHeight);
+
+          // Draw name at user-specified (X, Y)
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 48px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(name, 240, 1100);
+
+          const imageURL = canvas.toDataURL("image/png");
+          downloadLink.href = imageURL;
+          downloadLink.style.display = "block";
+        };
+        userImage.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+
+</body>
+</html>
