@@ -50,17 +50,6 @@
       border: 1px solid #ccc;
     }
 
-    input[type="range"] {
-      width: 90%;
-      max-width: 300px;
-    }
-
-    label {
-      font-size: 14px;
-      margin-top: 10px;
-      display: block;
-    }
-
     button {
       background-color: #ffcc00;
       color: #000;
@@ -105,11 +94,43 @@
       text-decoration: none;
       font-weight: bold;
       color: #0077cc;
+      cursor: pointer;
     }
 
     .credits a:hover {
       text-decoration: underline;
       color: #005599;
+    }
+
+    #adminPanel {
+      display: none;
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    table, th, td {
+      border: 1px solid #888;
+    }
+
+    th, td {
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #f2f2f2;
     }
   </style>
 </head>
@@ -118,21 +139,29 @@
   <h2>Generate Your Poster</h2>
   <input type="file" id="imageUpload" accept="image/*">
   <input type="text" id="nameInput" placeholder="Enter your name">
-
- 
-
   <button onclick="generatePoster()">Save Poster</button>
-
   <a id="downloadLink" href="#" download="poster.png">Click here to download your poster</a>
 
   <div id="posterWrapper">
     <canvas id="posterCanvas" width="1080" height="1350"></canvas>
   </div>
 
+  <div id="adminPanel">
+    <h3>📊 Poster Generation Report</h3>
+    <p>Total Posters: <span id="totalCount">0</span></p>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Name</th><th>Time</th></tr>
+      </thead>
+      <tbody id="recordTableBody"></tbody>
+    </table>
+  </div>
+
   <footer>
     <div class="credits">
       <div>🖌️ Designed by <a href="https://wa.me/qr/46PPTQH7J4PHL1" target="_blank">Rahul Mehta</a></div>
       <div>💻 Developed by <a href="https://wa.me/qr/3K25IZW4M6EPH1" target="_blank">Aditya Neel</a></div>
+      <div><a onclick="promptAdmin()">🔐 Admin Panel</a></div>
     </div>
   </footer>
 
@@ -153,8 +182,7 @@
 
     function generatePoster() {
       const file = document.getElementById("imageUpload").files[0];
-      const name = document.getElementById("nameInput").value;
-     
+      const name = document.getElementById("nameInput").value.trim();
       const downloadLink = document.getElementById("downloadLink");
 
       if (!file || !name) {
@@ -166,13 +194,9 @@
       reader.onload = function(e) {
         const userImage = new Image();
         userImage.onload = function() {
-          // Redraw background first
           ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-
-          // Draw user image
           ctx.drawImage(userImage, userImageX, userImageY, userImageWidth, userImageHeight);
 
-          // Draw name at user-specified (X, Y)
           ctx.fillStyle = "#ffffff";
           ctx.font = "bold 48px sans-serif";
           ctx.textAlign = "center";
@@ -181,10 +205,46 @@
           const imageURL = canvas.toDataURL("image/png");
           downloadLink.href = imageURL;
           downloadLink.style.display = "block";
+
+          savePosterRecord(name);
         };
         userImage.src = e.target.result;
       };
       reader.readAsDataURL(file);
+    }
+
+    function savePosterRecord(name) {
+      let records = JSON.parse(localStorage.getItem("posterRecords")) || [];
+      const now = new Date().toLocaleString();
+      records.push({ name, time: now });
+      localStorage.setItem("posterRecords", JSON.stringify(records));
+    }
+
+    function promptAdmin() {
+      const user = prompt("Enter Admin ID:");
+      const pass = prompt("Enter Password:");
+
+      if (user === "admin" && pass === "Admin@123") {
+        showAdminPanel();
+      } else {
+        alert("❌ Incorrect credentials");
+      }
+    }
+
+    function showAdminPanel() {
+      const records = JSON.parse(localStorage.getItem("posterRecords")) || [];
+      const total = records.length;
+      document.getElementById("totalCount").textContent = total;
+      const tbody = document.getElementById("recordTableBody");
+      tbody.innerHTML = "";
+
+      records.forEach((r, i) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${i + 1}</td><td>${r.name}</td><td>${r.time}</td>`;
+        tbody.appendChild(row);
+      });
+
+      document.getElementById("adminPanel").style.display = "block";
     }
   </script>
 
